@@ -303,15 +303,14 @@ Upload Audio
 
 ## 👨‍💻 Author
 
-**Vaibhav Simha J**  
-B.Tech CSE (AI & ML) — JAIN (Deemed-to-be University), Bangalore  
-📧 22btrcl163@jainuniversity.ac.in
+**[Vaibhav Simha J](https://www.linkedin.com/in/vaibhav-simha-j-0b46b5327/)**  
+📧 vaibhavsimhajworks@gmail.com
 
 ---
 
 ## 📄 License
 
-This project was developed as a Final Year B.Tech project at JAIN (Deemed-to-be University). Feel free to explore, learn from, and build upon this work with appropriate attribution.
+This project was developed by [Vaibhav Simha J](https://www.linkedin.com/in/vaibhav-simha-j-0b46b5327/). Feel free to explore, learn from, and build upon this work with appropriate attribution.
 
 ---
 
