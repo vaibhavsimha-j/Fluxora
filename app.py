@@ -21,7 +21,7 @@ import tempfile
 
 # ── PAGE CONFIG ────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Multimodal QA System",
+    page_title="Fluxora",
     page_icon="⚙️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -349,7 +349,7 @@ def load_models(groq_key: str, assembly_key: str):
 # ── SIDEBAR ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("## 🔑 API Configuration")
-    st.markdown("Enter your API keys to start the Multimodal QA System.")
+    st.markdown("Enter your API keys to start Fluxora.")
     st.markdown("")
 
     groq_key = st.text_input(
@@ -372,7 +372,7 @@ with st.sidebar:
 
 
 # ── MAIN LAYOUT ────────────────────────────────────────────────────────────────
-st.markdown("# Multimodal QA System")
+st.markdown("# Fluxora")
 st.markdown(
     "<p style='color: #000033; margin-top:-10px; margin-bottom:20px;'>"
     "Unlock deeper insights from your <b>AUDIO</b>, <b>VIDEO</b> &amp; <b>IMAGE</b>"

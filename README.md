@@ -1,4 +1,4 @@
-# 🧠 Multimodal QA System
+# 🧠 Fluxora
 
 > **Ask anything about any media. Get one accurate answer.**
 
