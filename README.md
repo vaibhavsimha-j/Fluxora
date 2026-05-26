@@ -2,7 +2,7 @@
 
 > **Ask anything about any media. Get one accurate answer.**
 
-🚀 **[Try Fluxora →](https://fluxora.streamlit.app)**
+[![Try Slot AI](https://img.shields.io/badge/Try%20Slot%20AI-Live%20App-brightgreen?style=for-the-badge&logo=streamlit)](https://fluxora.streamlit.app)
 
 A modular, end-to-end AI pipeline that accepts **images**, **audio**, and **video** as input and answers natural language queries by combining seven specialized perception models with a large language model reasoning engine — all within a clean Streamlit web interface.
 
