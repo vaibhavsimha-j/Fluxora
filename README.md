@@ -2,6 +2,8 @@
 
 > **Ask anything about any media. Get one accurate answer.**
 
+🚀 **[Try Fluxora Live →](https://fluxora.streamlit.app)**
+
 A modular, end-to-end AI pipeline that accepts **images**, **audio**, and **video** as input and answers natural language queries by combining seven specialized perception models with a large language model reasoning engine — all within a clean Streamlit web interface.
 
 ---
@@ -129,8 +131,8 @@ flowchart TD
 
 ```bash
 # Clone the repository
-git clone https://github.com/vaibhavsimha-j/MultimodalQuestionAnsweringSystem.git
-cd MultimodalQuestionAnsweringSystem
+git clone https://github.com/vaibhavsimha-j/Fluxora.git
+cd Fluxora
 
 # Install system dependencies (Linux/Ubuntu)
 sudo apt-get install ffmpeg libgl1
@@ -170,7 +172,7 @@ This repository is fully configured for **Streamlit Community Cloud** deployment
 ## 📁 Repository Structure
 
 ```
-MultimodalQuestionAnsweringSystem/
+Fluxora/
 │
 ├── app.py              # Main Streamlit application — full pipeline logic
 ├── requirements.txt    # Python package dependencies
