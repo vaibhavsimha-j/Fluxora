@@ -1,0 +1,46 @@
+# macOS
+.DS_Store
+
+# Claude Code
+.claude/
+
+# Dev Container
+.devcontainer/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment / secrets
+.env
+.env.*
+secrets.json
+
+# Temp files created by the app
+temp_audio_speech.mp3
+temp_sound_analysis.wav
+temp_frame_ocr.jpg
+tmp_*
+*.tmp
+
+# Model weights (large files)
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/

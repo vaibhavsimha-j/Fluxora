@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebSearch",
-      "Bash(git -C /Users/vaibhavsimhaj/Professional/IT/Projects/Multimodal-QA-System remote -v)"
-    ]
-  }
-}
