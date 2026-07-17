@@ -485,19 +485,19 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
                 os.remove("temp_frame_ocr.jpg")
 
             st.write("Running CLIP classification...")
-<<<<<<< HEAD
             prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
             resp = brain.client.models.generate_content(
-                model="gemini-3.5-flash",
+                model="gemini-flash-latest",
                 contents=prompt
             )
             candidates = [c.strip() for c in resp.text.split(',')]
-=======
             clip_prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
 
-    st.markdown(
+        st.markdown(
+        f"<div class='answer-box'>{answer}</div>",
         unsafe_allow_html=True,
     )
 
+    # Clean up temp file
     if os.path.exists(file_path):
         os.remove(file_path)
