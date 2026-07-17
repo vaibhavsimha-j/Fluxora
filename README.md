@@ -2,6 +2,8 @@
 
 > **Ask anything about any media. Get one accurate answer.**
 
+[![Try Fluxora](https://img.shields.io/badge/Try%20Fluxora%20-Live%20App-brightgreen?style=for-the-badge&logo=streamlit)](https://fluxora.streamlit.app)
+
 A modular, end-to-end AI pipeline that accepts **images**, **audio**, and **video** as input and answers natural language queries by combining seven specialized perception models with a large language model reasoning engine — all within a clean Streamlit web interface.
 
 ---
@@ -129,8 +131,8 @@ flowchart TD
 
 ```bash
 # Clone the repository
-git clone https://github.com/vaibhavsimha-j/MultimodalQuestionAnsweringSystem.git
-cd MultimodalQuestionAnsweringSystem
+git clone https://github.com/vaibhavsimha-j/Fluxora.git
+cd Fluxora
 
 # Install system dependencies (Linux/Ubuntu)
 sudo apt-get install ffmpeg libgl1
@@ -170,7 +172,7 @@ This repository is fully configured for **Streamlit Community Cloud** deployment
 ## 📁 Repository Structure
 
 ```
-MultimodalQuestionAnsweringSystem/
+Fluxora/
 │
 ├── app.py              # Main Streamlit application — full pipeline logic
 ├── requirements.txt    # Python package dependencies
@@ -303,15 +305,15 @@ Upload Audio
 
 ## 👨‍💻 Author
 
-**Vaibhav Simha J**  
-B.Tech CSE (AI & ML) — JAIN (Deemed-to-be University), Bangalore  
-📧 22btrcl163@jainuniversity.ac.in
+**[Vaibhav Simha J](https://www.linkedin.com/in/vaibhav-simha-j-0b46b5327/)**  
+
+📧 vaibhavsimhajworks@gmail.com
 
 ---
 
 ## 📄 License
 
-This project was developed as a Final Year B.Tech project at JAIN (Deemed-to-be University). Feel free to explore, learn from, and build upon this work with appropriate attribution.
+This project was developed by [Vaibhav Simha J](https://www.linkedin.com/in/vaibhav-simha-j-0b46b5327/). Feel free to explore, learn from, and build upon this work with appropriate attribution.
 
 ---
 
