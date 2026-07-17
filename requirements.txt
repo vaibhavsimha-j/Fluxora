@@ -10,4 +10,4 @@ opencv-python-headless
 librosa
 moviepy==1.0.3
 assemblyai
-groq
+google-generativeai

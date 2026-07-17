@@ -8,6 +8,7 @@ import librosa
 import csv
 import assemblyai as aai
 import tensorflow_hub as hub
+import google.generativeai as genai
 from PIL import Image
 from transformers import (
     CLIPProcessor, CLIPModel,
@@ -15,7 +16,6 @@ from transformers import (
     VideoMAEImageProcessor, TimesformerForVideoClassification
 )
 from ultralytics import YOLO
-from groq import Groq
 from moviepy.editor import VideoFileClip
 import tempfile
 
@@ -30,54 +30,37 @@ st.set_page_config(
 # ── DARK THEME CSS ─────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-  /* ── global background ── */
   .stApp { background-color: #B8B8FF; color: #000030; }
-
-  /* ── sidebar ── */
   section[data-testid="stSidebar"] {
       background-color: #000030 !important;
       border-right: 1px solid #2a2a4a;
   }
   section[data-testid="stSidebar"] * { color: #d0d0e8 !important; }
-
-  /* ── sidebar text inputs ── */
   section[data-testid="stSidebar"] .stTextInput > div > div > input {
       background-color: #1c1c38 !important;
       border: 1px solid #3a3a60 !important;
       border-radius: 6px !important;
       color: #e0e0f0 !important;
   }
-
-  /* ── info box in sidebar ── */
   section[data-testid="stSidebar"] .stAlert {
       background-color: #181830 !important;
       border: 1px solid #3a3a60 !important;
       border-radius: 8px !important;
   }
-
-  /* ── main title ── */
   h1 { color: #000033 !important; font-size: 2.4rem !important; font-weight: 700 !important; }
-
-  /* ── section headers ── */
   h2, h3 { color: #000033 !important; font-weight: 600 !important; }
-
-  /* ── panel cards ── */
   .panel-card {
       background-color: #151530;
       border: 1px solid #2a2a50;
       border-radius: 12px;
       padding: 20px 24px;
   }
-
-  /* ── file uploader ── */
   .stFileUploader > div {
       background-color: #000033 !important;
       border: 1px dashed #3a3a60 !important;
       border-radius: 10px !important;
   }
   .stFileUploader label { color: #B8B8FF !important; }
-
-  /* ── text input (query box) ── */
   .stTextInput > div > div > input {
       background-color: #1c1c38 !important;
       border: 1px solid #3a3a60 !important;
@@ -85,12 +68,7 @@ st.markdown("""
       color: #e0e0f0 !important;
   }
   .stTextInput label { color: #b0b0d0 !important; }
-
-div[data-testid="InputInstructions"] {
-      display: none !important;
-  }
-
-  /* ── Query button ── */
+  div[data-testid="InputInstructions"] { display: none !important; }
   .stButton > button {
       background-color: #2a2a50 !important;
       color: #e0e0f0 !important;
@@ -105,8 +83,6 @@ div[data-testid="InputInstructions"] {
       background-color: #3a3a70 !important;
       border-color: #6a6ab0 !important;
   }
-
-  /* ── preview container ── */
   .preview-box {
       background-color: #0a0a1e;
       border: 1px solid #2a2a50;
@@ -117,8 +93,6 @@ div[data-testid="InputInstructions"] {
       justify-content: center;
       overflow: hidden;
   }
-
-  /* ── answer box ── */
   .answer-box {
       background-color: #151530;
       border: 1px solid #3a3a60;
@@ -127,55 +101,37 @@ div[data-testid="InputInstructions"] {
       color: #e0e0f0;
       margin-top: 12px;
   }
-
-[data-testid="stFileUploader"] {
-    max-width: 220px;
-}
-[data-testid="stFileUploader"] section {
-    padding: 1rem !important;
-    min-height: auto !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-}
-
-[data-testid="stFileUploader"] small {
-    display: none !important;
-}
-
-[data-testid="stFileUploader"] div[data-testid="stFileUploaderDropzoneInstructions"] {
-    display: none !important;
-}
-
-[data-testid="stFileUploader"] button {
-    width: 180px !important;
-}
-[data-testid="stFileUploader"] button {
-    width: 180px !important;
-    color: #B8B8FF !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    text-align: center !important;
-}
-
-[data-testid="stStatusWidget"] details,
-[data-testid="stStatusWidget"] summary,
-[data-testid="stStatusWidget"] details summary,
-[data-testid="stStatusWidget"] summary:hover,
-[data-testid="stStatusWidget"] summary:focus,
-[data-testid="stStatusWidget"] summary:active {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-  /* ── divider ── */
+  [data-testid="stFileUploader"] { max-width: 220px; }
+  [data-testid="stFileUploader"] section {
+      padding: 1rem !important;
+      min-height: auto !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+  }
+  [data-testid="stFileUploader"] small { display: none !important; }
+  [data-testid="stFileUploader"] div[data-testid="stFileUploaderDropzoneInstructions"] {
+      display: none !important;
+  }
+  [data-testid="stFileUploader"] button {
+      width: 180px !important;
+      color: #B8B8FF !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+  }
+  [data-testid="stStatusWidget"] details,
+  [data-testid="stStatusWidget"] summary,
+  [data-testid="stStatusWidget"] details summary,
+  [data-testid="stStatusWidget"] summary:hover,
+  [data-testid="stStatusWidget"] summary:focus,
+  [data-testid="stStatusWidget"] summary:active {
+      background: transparent !important;
+      background-color: transparent !important;
+  }
   hr { border-color: #2a2a4a !important; }
-
-  /* ── spinner ── */
   .stSpinner > div { border-top-color: #7070c0 !important; }
-
-  /* ── hide default Streamlit header/footer ── */
   #MainMenu, footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
@@ -183,8 +139,10 @@ div[data-testid="InputInstructions"] {
 # ── DEVICE ─────────────────────────────────────────────────────────────────────
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+GEMINI_MODEL = "gemini-flash-latest"
 
-# ── FEATURE EXTRACTOR (logic unchanged) ───────────────────────────────────────
+
+# ── FEATURE EXTRACTOR ─────────────────────────────────────────────────────────
 class FeatureExtractor:
     def __init__(self):
         self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14").to(device)
@@ -218,7 +176,6 @@ class FeatureExtractor:
                 video.close()
             except:
                 return "Audio Extraction Failed"
-
         try:
             config = aai.TranscriptionConfig(speech_models=["universal-3-pro", "universal-2"])
             transcript = self.transcriber.transcribe(target_path, config=config)
@@ -239,7 +196,6 @@ class FeatureExtractor:
                 video.close()
             except:
                 return "Sound extraction failed"
-
         try:
             waveform, _ = librosa.load(audio_path, sr=16000)
             scores, _, _ = self.yamnet_model(waveform)
@@ -277,7 +233,6 @@ class FeatureExtractor:
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         if total_frames <= 0:
             return "Invalid Video"
-
         indices = np.linspace(0, total_frames - 1, 8).astype(int)
         count = 0
         success = True
@@ -291,14 +246,11 @@ class FeatureExtractor:
             if len(frames) == 8:
                 break
         cap.release()
-
         while len(frames) < 8:
             frames.append(frames[-1] if frames else np.zeros((224, 224, 3), dtype=np.uint8))
-
         inputs = self.video_processor(list(frames), return_tensors="pt").to(device)
         with torch.no_grad():
             outputs = self.video_model(**inputs)
-
         return self.video_model.config.id2label[outputs.logits.argmax().item()]
 
     def get_ocr_text(self, image_path):
@@ -309,10 +261,10 @@ class FeatureExtractor:
             return f"OCR Failed: {e}"
 
 
-# ── REASONING ENGINE (logic unchanged) ────────────────────────────────────────
+# ── REASONING ENGINE ──────────────────────────────────────────────────────────
 class ReasoningEngine:
     def __init__(self):
-        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        self._model = genai.GenerativeModel(GEMINI_MODEL)
 
     def final_answer(self, query, data):
         prompt = f"""
@@ -329,17 +281,18 @@ class ReasoningEngine:
 
         **Instructions:** Answer by combining audio and visual evidence. Be direct and concise.
         """
-        resp = self.client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile"
-        )
-        return resp.choices[0].message.content
+        response = self._model.generate_content(prompt)
+        return response.text
+
+    def generate_clip_candidates(self, prompt: str) -> str:
+        response = self._model.generate_content(prompt)
+        return response.text
 
 
 # ── CACHED MODEL LOADER ────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
-def load_models(groq_key: str, assembly_key: str):
-    os.environ["GROQ_API_KEY"] = groq_key
+def load_models(gemini_key: str, assembly_key: str):
+    genai.configure(api_key=gemini_key)
     aai.settings.api_key = assembly_key
     extractor = FeatureExtractor()
     brain = ReasoningEngine()
@@ -352,11 +305,11 @@ with st.sidebar:
     st.markdown("Enter your API keys to start Fluxora.")
     st.markdown("")
 
-    groq_key = st.text_input(
-        "Groq API Key",
+    gemini_key = st.text_input(
+        "Google AI API Key",
         type="password",
-        placeholder="gsk_...",
-        help="Your Groq API key from console.groq.com",
+        placeholder="AIza...",
+        help="Get your free key at aistudio.google.com",
     )
     assembly_key = st.text_input(
         "AssemblyAI API Key",
@@ -368,7 +321,7 @@ with st.sidebar:
     st.markdown("")
     st.info("🔒 Your API Keys are SAFE with us!")
 
-    keys_ready = bool(groq_key and assembly_key)
+    keys_ready = bool(gemini_key and assembly_key)
 
 
 # ── MAIN LAYOUT ────────────────────────────────────────────────────────────────
@@ -385,14 +338,14 @@ left_col, right_col = st.columns([1, 1], gap="large")
 # ── LEFT COLUMN ────────────────────────────────────────────────────────────────
 with left_col:
     st.markdown("Upload Media")
-    
+
     uploaded_file = st.file_uploader(
         "Upload Image, Video or Audio",
         type=["mp4", "avi", "mov", "mkv", "mp3", "wav", "m4a", "flac", "jpg", "jpeg", "png", "webp"],
         label_visibility="collapsed",
     )
     st.caption("Supported Formats: mp4, avi, mov, mkv, mp3, wav, m4a, flac, jpg, jpeg, png, webp")
-    
+
     st.markdown("Ask Anything 💡!")
     user_query = st.text_input("",
         placeholder="Enter your Query",
@@ -407,23 +360,19 @@ with left_col:
 
 # ── RIGHT COLUMN ───────────────────────────────────────────────────────────────
 with right_col:
-    st.markdown(
-        """
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown("", unsafe_allow_html=True)
     if uploaded_file is not None:
         file_ext = uploaded_file.name.rsplit(".", 1)[-1].lower()
         is_video = file_ext in ("mp4", "avi", "mov", "mkv")
         is_audio = file_ext in ("mp3", "wav", "m4a", "flac")
         is_image = file_ext in ("jpg", "jpeg", "png", "webp")
-        
+
         preview_left, preview_center, preview_right = st.columns([0.1, 0.8, 0.1])
-        
+
         if is_video:
             st.video(uploaded_file)
         elif is_image:
-            st.image(uploaded_file, width= 450)
+            st.image(uploaded_file, width=450)
         elif is_audio:
             st.audio(uploaded_file)
     else:
@@ -437,7 +386,6 @@ with right_col:
 # ── PIPELINE EXECUTION ─────────────────────────────────────────────────────────
 if query_clicked and uploaded_file is not None and user_query and keys_ready:
 
-    # Save uploaded file to a temp path so file-path-based models can read it
     suffix = "." + uploaded_file.name.rsplit(".", 1)[-1].lower()
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(uploaded_file.read())
@@ -447,9 +395,8 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
     is_video = file_ext in ("mp4", "avi", "mov", "mkv")
     is_audio = file_ext in ("mp3", "wav", "m4a", "flac")
 
-
     with st.spinner("Loading models (first run may take a few minutes)..."):
-        extractor, brain = load_models(groq_key, assembly_key)
+        extractor, brain = load_models(gemini_key, assembly_key)
 
     analysis_data = {}
 
@@ -465,7 +412,6 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
             st.write("Analyzing video action...")
             analysis_data['action'] = extractor.get_timesformer_action(file_path)
 
-            # Extract the same 8 evenly-spaced frames (full resolution) used by TimeSformer
             cap = cv2.VideoCapture(file_path)
             total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             indices = set(np.linspace(0, total - 1, 8).astype(int))
@@ -510,12 +456,8 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
             analysis_data['ocr_text'] = ", ".join(all_text) if all_text else "No text detected"
 
             st.write("Running CLIP classification...")
-            prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
-            resp = brain.client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model="llama-3.3-70b-versatile"
-            )
-            candidates = [c.strip() for c in resp.choices[0].message.content.split(',')]
+            clip_prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
+            candidates = [c.strip() for c in brain.generate_clip_candidates(clip_prompt).split(',')]
             all_logits = [extractor.get_clip_embeddings(f, candidates) for f in pil_frames]
             avg_logits = torch.stack(all_logits).mean(0)
             analysis_data['clip_match'] = candidates[avg_logits.argmax().item()]
@@ -535,12 +477,8 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
                 os.remove("temp_frame_ocr.jpg")
 
             st.write("Running CLIP classification...")
-            prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
-            resp = brain.client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model="llama-3.3-70b-versatile"
-            )
-            candidates = [c.strip() for c in resp.choices[0].message.content.split(',')]
+            clip_prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
+            candidates = [c.strip() for c in brain.generate_clip_candidates(clip_prompt).split(',')]
             logits = extractor.get_clip_embeddings(raw_img, candidates)
             analysis_data['clip_match'] = candidates[logits.argmax().item()]
 
@@ -553,6 +491,5 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
         unsafe_allow_html=True,
     )
 
-    # Clean up temp file
     if os.path.exists(file_path):
         os.remove(file_path)
