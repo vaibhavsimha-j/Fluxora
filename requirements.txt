@@ -13,4 +13,4 @@ assemblyai
 google-genai
 numpy
 Pillow
-setuptools
+setuptools<82
