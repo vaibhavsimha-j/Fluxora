@@ -8,7 +8,8 @@ import librosa
 import csv
 import assemblyai as aai
 import tensorflow_hub as hub
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from PIL import Image
 from transformers import (
     CLIPProcessor, CLIPModel,
@@ -264,7 +265,7 @@ class FeatureExtractor:
 # ── REASONING ENGINE ──────────────────────────────────────────────────────────
 class ReasoningEngine:
     def __init__(self):
-        self._model = genai.GenerativeModel(GEMINI_MODEL)
+        self._client = genai.Client()
 
     def final_answer(self, query, data):
         prompt = f"""
@@ -281,18 +282,24 @@ class ReasoningEngine:
 
         **Instructions:** Answer by combining audio and visual evidence. Be direct and concise.
         """
-        response = self._model.generate_content(prompt)
+        response = self._client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+        )
         return response.text
 
     def generate_clip_candidates(self, prompt: str) -> str:
-        response = self._model.generate_content(prompt)
+        response = self._client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+        )
         return response.text
 
 
 # ── CACHED MODEL LOADER ────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
 def load_models(gemini_key: str, assembly_key: str):
-    genai.configure(api_key=gemini_key)
+    os.environ["GOOGLE_API_KEY"] = gemini_key
     aai.settings.api_key = assembly_key
     extractor = FeatureExtractor()
     brain = ReasoningEngine()
