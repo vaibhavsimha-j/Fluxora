@@ -15,7 +15,7 @@ from transformers import (
     VideoMAEImageProcessor, TimesformerForVideoClassification
 )
 from ultralytics import YOLO
-from groq import Groq
+from google import genai
 from moviepy.editor import VideoFileClip
 import tempfile
 
@@ -309,10 +309,10 @@ class FeatureExtractor:
             return f"OCR Failed: {e}"
 
 
-# ── REASONING ENGINE (logic unchanged) ────────────────────────────────────────
+# ── REASONING ENGINE (Updated with Gemini API) ─────────────────────────────────
 class ReasoningEngine:
     def __init__(self):
-        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+        self.client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
     def final_answer(self, query, data):
         prompt = f"""
@@ -329,17 +329,17 @@ class ReasoningEngine:
 
         **Instructions:** Answer by combining audio and visual evidence. Be direct and concise.
         """
-        resp = self.client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile"
+        resp = self.client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=prompt
         )
-        return resp.choices[0].message.content
+        return resp.text
 
 
 # ── CACHED MODEL LOADER ────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
-def load_models(groq_key: str, assembly_key: str):
-    os.environ["GROQ_API_KEY"] = groq_key
+def load_models(gemini_key: str, assembly_key: str):
+    os.environ["GEMINI_API_KEY"] = gemini_key
     aai.settings.api_key = assembly_key
     extractor = FeatureExtractor()
     brain = ReasoningEngine()
@@ -352,11 +352,11 @@ with st.sidebar:
     st.markdown("Enter your API keys to start Fluxora.")
     st.markdown("")
 
-    groq_key = st.text_input(
-        "Groq API Key",
+    gemini_key = st.text_input(
+        "Gemini API Key",
         type="password",
-        placeholder="gsk_...",
-        help="Your Groq API key from console.groq.com",
+        placeholder="AIza...",
+        help="Your Gemini API key from Google AI Studio",
     )
     assembly_key = st.text_input(
         "AssemblyAI API Key",
@@ -368,7 +368,7 @@ with st.sidebar:
     st.markdown("")
     st.info("🔒 Your API Keys are SAFE with us!")
 
-    keys_ready = bool(groq_key and assembly_key)
+    keys_ready = bool(gemini_key and assembly_key)
 
 
 # ── MAIN LAYOUT ────────────────────────────────────────────────────────────────
@@ -449,7 +449,7 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
 
 
     with st.spinner("Loading models (first run may take a few minutes)..."):
-        extractor, brain = load_models(groq_key, assembly_key)
+        extractor, brain = load_models(gemini_key, assembly_key)
 
     analysis_data = {}
 
@@ -511,11 +511,11 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
 
             st.write("Running CLIP classification...")
             prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
-            resp = brain.client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model="llama-3.3-70b-versatile"
+            resp = brain.client.models.generate_content(
+                model="gemini-3.5-flash",
+                contents=prompt
             )
-            candidates = [c.strip() for c in resp.choices[0].message.content.split(',')]
+            candidates = [c.strip() for c in resp.text.split(',')]
             all_logits = [extractor.get_clip_embeddings(f, candidates) for f in pil_frames]
             avg_logits = torch.stack(all_logits).mean(0)
             analysis_data['clip_match'] = candidates[avg_logits.argmax().item()]
@@ -536,11 +536,11 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
 
             st.write("Running CLIP classification...")
             prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
-            resp = brain.client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model="llama-3.3-70b-versatile"
+            resp = brain.client.models.generate_content(
+                model="gemini-3.5-flash",
+                contents=prompt
             )
-            candidates = [c.strip() for c in resp.choices[0].message.content.split(',')]
+            candidates = [c.strip() for c in resp.text.split(',')]
             logits = extractor.get_clip_embeddings(raw_img, candidates)
             analysis_data['clip_match'] = candidates[logits.argmax().item()]
 
