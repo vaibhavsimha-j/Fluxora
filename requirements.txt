@@ -5,7 +5,7 @@ easyocr
 opencv-python
 librosa
 assemblyai
-tensorflow-hub
+tensorflow-hub==0.16.1
 setuptools
 google-genai
 Pillow
