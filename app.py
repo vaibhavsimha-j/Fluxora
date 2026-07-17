@@ -9,7 +9,6 @@ import csv
 import assemblyai as aai
 import tensorflow_hub as hub
 from google import genai
-from google.genai import types
 from PIL import Image
 from transformers import (
     CLIPProcessor, CLIPModel,
@@ -17,7 +16,6 @@ from transformers import (
     VideoMAEImageProcessor, TimesformerForVideoClassification
 )
 from ultralytics import YOLO
-from google import genai
 from moviepy.editor import VideoFileClip
 import tempfile
 
@@ -140,9 +138,7 @@ st.markdown("""
 
 # ── DEVICE ─────────────────────────────────────────────────────────────────────
 device = "cuda" if torch.cuda.is_available() else "cpu"
-
 GEMINI_MODEL = "gemini-flash-latest"
-
 
 # ── FEATURE EXTRACTOR ─────────────────────────────────────────────────────────
 class FeatureExtractor:
@@ -300,7 +296,7 @@ class ReasoningEngine:
 # ── CACHED MODEL LOADER ────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
 def load_models(gemini_key: str, assembly_key: str):
-    os.environ["GOOGLE_API_KEY"] = gemini_key
+    os.environ["GEMINI_API_KEY"] = gemini_key
     aai.settings.api_key = assembly_key
     extractor = FeatureExtractor()
     brain = ReasoningEngine()
@@ -486,14 +482,15 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
 
             st.write("Running CLIP classification...")
             prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
-            resp = brain.client.models.generate_content(
-                model="gemini-flash-latest",
-                contents=prompt
-            )
-            candidates = [c.strip() for c in resp.text.split(',')]
-            clip_prompt = f"Query: {user_query}\nContext: {analysis_data['scout']}\nGenerate 15 visual candidates (comma list)."
+            candidates = [c.strip() for c in brain.generate_clip_candidates(prompt).split(',')]
+            logits = extractor.get_clip_embeddings(raw_img, candidates)
+            analysis_data['clip_match'] = candidates[logits.argmax().item()]
+            
+        st.write("Synthesizing final answer...")
+        answer = brain.final_answer(user_query, analysis_data)
+        status.update(label="Analysis complete!", state="complete", expanded=False)
 
-        st.markdown(
+    st.markdown(
         f"<div class='answer-box'>{answer}</div>",
         unsafe_allow_html=True,
     )
