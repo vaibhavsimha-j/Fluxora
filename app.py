@@ -18,6 +18,7 @@ from transformers import (
 from ultralytics import YOLO
 from moviepy.editor import VideoFileClip
 import tempfile
+import gc  # Added for memory management
 
 # ── PAGE CONFIG ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -143,11 +144,12 @@ GEMINI_MODEL = "gemini-flash-latest"
 # ── FEATURE EXTRACTOR ─────────────────────────────────────────────────────────
 class FeatureExtractor:
     def __init__(self):
-        self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14").to(device)
-        self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
-        self.blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
-        self.blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large").to(device)
-        self.yolo_model = YOLO('yolov8m.pt')
+        # Reduced to base models for optimized RAM usage
+        self.clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
+        self.clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+        self.blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+        self.blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(device)
+        self.yolo_model = YOLO('yolov8s.pt')  # Swapped to small version for faster inference/less memory
         self.video_processor = VideoMAEImageProcessor.from_pretrained("facebook/timesformer-base-finetuned-k400")
         self.video_model = TimesformerForVideoClassification.from_pretrained("facebook/timesformer-base-finetuned-k400").to(device)
 
@@ -215,7 +217,8 @@ class FeatureExtractor:
 
     def get_blip_scout(self, image):
         inputs = self.blip_processor(image, return_tensors="pt").to(device)
-        out = self.blip_model.generate(**inputs)
+        with torch.no_grad():
+            out = self.blip_model.generate(**inputs)
         return self.blip_processor.decode(out[0], skip_special_tokens=True)
 
     def get_yolo_detections(self, image):
@@ -351,7 +354,8 @@ with left_col:
     st.caption("Supported Formats: mp4, avi, mov, mkv, mp3, wav, m4a, flac, jpg, jpeg, png, webp")
 
     st.markdown("Ask Anything 💡!")
-    user_query = st.text_input("",
+    # Fixed label string constraint to cleanly clear accessibility log warnings
+    user_query = st.text_input("Ask a Question",
         placeholder="Enter your Query",
         label_visibility="collapsed"
     )
@@ -498,3 +502,6 @@ if query_clicked and uploaded_file is not None and user_query and keys_ready:
     # Clean up temp file
     if os.path.exists(file_path):
         os.remove(file_path)
+        
+    # Active garbage collection to drop cached tensors out of RAM immediately
+    gc.collect()
