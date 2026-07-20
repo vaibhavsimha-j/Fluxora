@@ -70,7 +70,7 @@ flowchart TD
     D --> E
 
     subgraph E["🧠 REASONING LAYER — ReasoningEngine Class"]
-        E1["Llama 3.3 70B  ·  Groq API\nReads all evidence + query → Generates final answer"]
+        E1["Google Gemini Flash  ·  Google Gemini API\nReads all evidence + query → Generates final answer"]
     end
 
     E --> F([" ✅ ACCURATE ANSWER "])
@@ -98,7 +98,7 @@ flowchart TD
 | Action Recognition | TimeSformer (`facebook/timesformer-base-finetuned-k400`) | Temporal video action classification |
 | Sound Classification | YAMNet (`google/yamnet/1`) | Environmental sound tagging |
 | Speech Transcription | AssemblyAI Universal-3-Pro / Universal-2 | Automatic speech recognition |
-| Reasoning Engine | Groq LLaMA-3.3-70B-Versatile | Multimodal evidence synthesis |
+| Reasoning Engine | Google Gemini Flash | Multimodal evidence synthesis |
 
 ---
 
@@ -122,7 +122,7 @@ flowchart TD
 
 - Python 3.11 (as specified in `runtime.txt`)
 - GPU recommended (CUDA-compatible) — CPU supported but slower
-- [Groq API Key](https://console.groq.com) — for LLaMA-3.3-70B inference
+- [Google Gemini API Key](https://aistudio.google.com/) — for Gemini Flash inference
 - [AssemblyAI API Key](https://www.assemblyai.com) — for speech transcription
 
 ---
@@ -199,7 +199,7 @@ opencv-python-headless
 librosa
 moviepy==1.0.3
 assemblyai
-groq
+google-genai
 ```
 
 ### System Packages — `packages.txt`
@@ -279,7 +279,7 @@ Upload Audio
 
 | Service | Purpose | Get Key |
 |---------|---------|---------|
-| **Groq** | Serves Llama 3.3 70B for candidate label generation and final answer synthesis | [console.groq.com](https://console.groq.com) |
+| **Google** | Serves Gemini Flash for candidate label generation and final answer synthesis | [aistudio.google.com](https://aistudio.google.com/) |
 | **AssemblyAI** | Universal-3-Pro / Universal-2 automatic speech recognition | [assemblyai.com](https://www.assemblyai.com) |
 
 > Keys are entered securely via the sidebar and are never stored — they exist only within your active Streamlit session.
