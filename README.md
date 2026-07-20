@@ -70,7 +70,7 @@ flowchart TD
     D --> E
 
     subgraph E["🧠 REASONING LAYER — ReasoningEngine Class"]
-        E1["Google Gemini Flash  ·  Google Gemini API\nReads all evidence + query → Generates final answer"]
+        E1["Google Gemini Flash\nReads all evidence + query → Generates final answer"]
     end
 
     E --> F([" ✅ ACCURATE ANSWER "])
