@@ -161,7 +161,7 @@ This repository is fully configured for **Streamlit Community Cloud** deployment
 
 ### Usage
 
-1. Enter your **Groq API Key** and **AssemblyAI API Key** in the sidebar
+1. Enter your **Gemini API Key** and **AssemblyAI API Key** in the sidebar
 2. Upload a media file — image, audio, or video
 3. Type your natural language question in the query box
 4. Click **Run** and watch the pipeline execute step by step in real time
